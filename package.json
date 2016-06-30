@@ -1,0 +1,25 @@
+{
+  "name": "webpack-stats-diff",
+  "version": "0.0.1",
+  "description": "A package for diffing webpack stats files",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "gulp compile"
+  },
+  "author": "Kostas Manionis",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.4.0",
+    "cliui": "^3.2.0",
+    "colors": "^1.1.2",
+    "filesize": "^3.3.0",
+    "yargs": "^4.7.1"
+  },
+  "devDependencies": {
+    "babel-preset-es2015": "^6.9.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-plumber": "^1.1.0"
+  }
+}
