@@ -5,7 +5,7 @@ const differs = require('./reporters');
 const run = (name, options, stats) => {
     const differ = differs[name];
     const result = differ.buildDiffObject({stats, options});
-    const log = differ.buildLogString(result);
+    const log = differ.buildLogString({result, options});
     console.log(log);
 };
 

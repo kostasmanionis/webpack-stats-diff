@@ -12,16 +12,18 @@ module.exports = () => {
         stats: []
     };
 
-    const {files, chunks, names} = require('yargs')
+    const {files, chunks, names, sort} = require('yargs')
         .alias({
             c: 'chunks',
             n: 'names',
-            f: 'files'
+            f: 'files',
+            s: 'sort'
         })
         .describe({
             c: 'Output chunk diff',
             m: 'Chunk/module name list',
-            f: 'Specify paths to stats files'
+            f: 'Specify paths to stats files',
+            s: 'Asc/desc sort'
         })
         .demand('files')
         .help()
@@ -37,7 +39,7 @@ module.exports = () => {
     if (chunks) {
         compareConfig.reporters.push({
             reporter: 'chunks',
-            options: {names}
+            options: {names, sort}
         });
     }
 
