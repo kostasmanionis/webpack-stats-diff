@@ -1,3 +1,4 @@
+'use strict';
 
 const filesize = require('filesize');
 const ui = require('cliui')({

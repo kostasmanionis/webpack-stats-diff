@@ -1,5 +1,6 @@
-const chalk = require('chalk');
+'use strict';
 
+const chalk = require('chalk');
 
 module.exports = {
     calcNumDiff(a, b) {
