@@ -25,9 +25,10 @@ module.exports = () => {
             f: 'Specify paths to stats files',
             s: 'Asc/desc sort'
         })
+        .default('sort', [])
         .demand('files')
         .help()
-        .array(['files', 'names'])
+        .array(['files', 'names', 'sort'])
         .boolean('chunks')
         .argv;
 

@@ -6,11 +6,7 @@ const ui = require('cliui')({
 });
 const chalk = require('chalk');
 const utils = require('../utils');
-
-const DATA_KEY_MAP = {
-    modules: 'moduleCount',
-    size: 'chunkSize'
-};
+const CHUNK_NAME_COLUMN_WIDTH = 25;
 
 module.exports = {
     buildDiffObject({stats, options}) {
@@ -45,7 +41,7 @@ module.exports = {
                 }, initial);
         }, Object.create(null));
 
-        // Convert the object to an array. The order doesn't really matter
+        // Convert the object to an array. The order doesn't really matter.
         const result = [];
 
         for (const name in chunksData) {
@@ -58,65 +54,75 @@ module.exports = {
 
     buildLogString({result, options}) {
 
-        const header = ['Chunk Name', 'Size before', 'Size after', 'Difference', 'Percentage', 'Modules before', 'Modules after', 'Difference']
-            .map((text, index) => {
-                return {
-                    text: chalk.underline(text),
-                    width: index === 0 ? 30 : undefined
-                };
+        const header = [
+            'Chunk Name',
+            'Size before',
+            'Size after',
+            'Difference',
+            'Change',
+            'Modules before',
+            'Modules after',
+            'Difference',
+            'Change'
+        ].map(text => chalk.underline(text));
+
+        const sortedResult = result
+            .sort((before, after) => {
+                // By default we're sorting by chunk size
+                let sortKey = 'chunkSize';
+
+                if (options.sort.indexOf('modules') > -1) {
+                    sortKey = 'moduleCount';
+                }
+                const beforeData = before[sortKey];
+                const afterData = after[sortKey];
+
+                // Currently only support sorting by change value
+                const sortByBefore = utils.getChange(beforeData[0], beforeData[1]);
+                const sortByAfter = utils.getChange(afterData[0], afterData[1]);
+                let sortResult = sortByBefore - sortByAfter;
+
+                if (options.sort.indexOf('desc') > -1) {
+                    sortResult *= -1;
+                }
+
+                return sortResult;
+            })
+            .map(({name, chunkSize, moduleCount}) => {
+                const sizeDifference = chunkSize[1] - chunkSize[0];
+                const moduleDifference = moduleCount[1] - moduleCount[0];
+                const sizePercentage = Math.round(utils.getChangePercentage(chunkSize[0], chunkSize[1]));
+                const modulePercentage = Math.round(utils.getChangePercentage(moduleCount[0], moduleCount[1]));
+                const color = utils.getColor(sizePercentage);
+
+                return [
+                    // Chunk name
+                    name,
+                    // Size before
+                    filesize(chunkSize[0]),
+                    // Size after
+                    filesize(chunkSize[1]),
+                    // Size difference
+                    filesize(sizeDifference),
+                    // Size difference in percents
+                    `${sizePercentage}%`,
+                    // Modules before
+                    moduleCount[0],
+                    // Modules after
+                    moduleCount[1],
+                    // Module difference
+                    moduleDifference,
+                    // Module Percentage
+                    `${modulePercentage}%`
+                ].map(text => color(text));
             });
 
-        ui.div(...header);
-
-        const sortedResult = result.sort((before, after) => {
-            const sortKey = DATA_KEY_MAP[options.sortBy] || DATA_KEY_MAP.size;
-            const sortByBefore = before[sortKey];
-            const sortByAfter = after[sortKey];
-
-            const beforeAverage = utils.calcNumDiff(sortByBefore[0], sortByBefore[1]);
-            const afterAverage = utils.calcNumDiff(sortByAfter[0], sortByAfter[1]);
-
-            return beforeAverage - afterAverage;
-        });
-
-        if (options.sort === 'desc') {
-            sortedResult.reverse();
-        }
-
-        sortedResult.forEach(({name, chunkSize, moduleCount}) => {
-            const sizeDifference = chunkSize[1] - chunkSize[0];
-            const moduleDifference = moduleCount[1] - moduleCount[0];
-            const sizePercentage = Math.round(utils.calcPercentageDiff(chunkSize[0], chunkSize[1]));
-            const modulePercentage = Math.round(utils.calcPercentageDiff(moduleCount[0], moduleCount[1]));
-            const color = utils.getColor(sizePercentage);
-
-            const formattedd = [
-                // Chunk name
-                name,
-                // Size before
-                filesize(chunkSize[0]),
-                // Size after
-                filesize(chunkSize[1]),
-                // Size difference
-                filesize(sizeDifference),
-                // Size difference in percents
-                `${sizePercentage}%`,
-                // Modules before
-                moduleCount[0],
-                // Modules after
-                moduleCount[1],
-                // Module difference
-                moduleDifference,
-                // Module Percentage
-                `${modulePercentage}`
-            ].map(text => color(text));
-
-            const nameColumn = {
-                text: formattedd.shift(),
-                width: 30
-            };
-
-            ui.div(nameColumn, ...formattedd);
+        sortedResult.unshift(header);
+        sortedResult.forEach(stuff => {
+            ui.div(...stuff.map((text, index) => {
+                const width = index === 0 ? CHUNK_NAME_COLUMN_WIDTH : undefined;
+                return {text, width};
+            }));
         });
 
         return ui.toString();

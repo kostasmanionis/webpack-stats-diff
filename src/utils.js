@@ -3,12 +3,12 @@
 const chalk = require('chalk');
 
 module.exports = {
-    calcNumDiff(a, b) {
+    getChange(a, b) {
         return (b - a) / b;
     },
 
-    calcPercentageDiff(a, b) {
-        return this.calcNumDiff(a, b) * 100;
+    getChangePercentage(a, b) {
+        return this.getChange(a, b) * 100;
     },
 
     getColor(num) {
