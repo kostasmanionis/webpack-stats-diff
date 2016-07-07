@@ -12,16 +12,17 @@ module.exports = () => {
         stats: []
     };
 
-    const {files, chunks, names, sort} = require('yargs')
+    const {files, chunks, names, sort, assets} = require('yargs')
         .alias({
             c: 'chunks',
             n: 'names',
             f: 'files',
-            s: 'sort'
+            s: 'sort',
+            a: 'assets'
         })
         .describe({
             c: 'Output chunk diff',
-            m: 'Chunk/module name list',
+            a: 'Output asset diff',
             f: 'Specify paths to stats files',
             s: 'Asc/desc sort'
         })
@@ -37,9 +38,10 @@ module.exports = () => {
         return fs.readFileAsync(filePath, 'utf8');
     });
 
-    if (chunks) {
+    if (chunks || assets) {
+        const reporterName = chunks ? 'chunks' : 'assets';
         compareConfig.reporters.push({
-            reporter: 'chunks',
+            reporter: reporterName,
             options: {names, sort}
         });
     }
