@@ -12,24 +12,26 @@ module.exports = () => {
         stats: []
     };
 
-    const {files, chunks, names, sort, assets} = require('yargs')
+    const {files, chunks, exclude, sort, assets, modules} = require('yargs')
         .alias({
             c: 'chunks',
-            n: 'names',
+            e: 'exclude',
             f: 'files',
             s: 'sort',
-            a: 'assets'
+            a: 'assets',
+            m: 'modules'
         })
         .describe({
             c: 'Output chunk diff',
             a: 'Output asset diff',
             f: 'Specify paths to stats files',
-            s: 'Asc/desc sort'
+            s: 'Asc/desc sort',
+            m: 'Output module diff. Accepts chunk name' // Only allowed on chunks
         })
         .default('sort', [])
         .demand('files')
         .help()
-        .array(['files', 'names', 'sort'])
+        .array(['files', 'sort', 'modules'])
         .boolean('chunks')
         .argv;
 
@@ -42,7 +44,14 @@ module.exports = () => {
         const reporterName = chunks ? 'chunks' : 'assets';
         compareConfig.reporters.push({
             reporter: reporterName,
-            options: {names, sort}
+            options: {exclude, sort}
+        });
+    }
+
+    if (modules) {
+        compareConfig.reporters.push({
+            reporter: 'modules',
+            options: {modules}
         });
     }
 

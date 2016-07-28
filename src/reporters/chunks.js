@@ -6,6 +6,7 @@ const ui = require('cliui')({
 });
 const chalk = require('chalk');
 const utils = require('../utils');
+
 const headerCopy = {
     name: {
         assets: 'Asset name',
@@ -23,8 +24,6 @@ const headerCopy = {
     percentage: 'Percentage'
 };
 
-const getChunkName = chunk => chunk.name || chunk.names[0];
-
 const mapChunkDiffData = formatFunc => sizeData => {
     const sizeDifference = sizeData[1] - sizeData[0];
     const sizePercentage = Math.round(utils.getChangePercentage(sizeData[0], sizeData[1]));
@@ -39,9 +38,12 @@ const getSortValue = (before, after, sortBy) => {
     // By default we're sorting by chunk size
     let sortKey = 'chunkSize';
 
+    // Or we can sort by module count
     if (sortBy.indexOf('modules') > -1) {
         sortKey = 'moduleCount';
     }
+
+    // Assign to variable, easier to the eye
     const beforeData = before[sortKey];
     const afterData = after[sortKey];
 
@@ -50,10 +52,12 @@ const getSortValue = (before, after, sortBy) => {
     const sortByAfter = utils.getChange(afterData[0], afterData[1]);
     let sortResult = sortByBefore - sortByAfter;
 
+    // Sort descending? Just flip everything LOL
     if (sortBy.indexOf('desc') > -1) {
         sortResult *= -1;
     }
 
+    // Allright bye
     return sortResult;
 };
 
@@ -62,14 +66,29 @@ module.exports = {
         const chunksData = stats.reduce((initial, stat, fileIndex) => {
             return stat[reporterName]
                 // First filter out the chunks/assets that we'll be comparing
-                .filter(chunk => options.names ? options.names.indexOf(getChunkName(chunk)) > -1 : true)
+                .filter(chunk => {
+                    const {exclude} = options;
+
+                    // It's sometime usefull to exclude certain files. Who cares about js maps, right?
+                    if (exclude) {
+                        // Stack overflow is the most reliable source in the world, right?
+                        // http://stackoverflow.com/questions/874709/converting-user-input-string-to-regular-expression
+                        const match = exclude.match(new RegExp('^/(.*?)/([gimy]*)$'));
+                        const regex = new RegExp(match[1], match[2]);
+                        const chunkName = utils.normalizeChunkName(chunk, stat);
+                        return !regex.test(chunkName);
+                    } else {
+                        return true;
+                    }
+                })
                 // Then reduce the stats to an map-like object, since it makes life a little bit easier than
                 // searching for chunk data in an array and is generaly easier to wrap your head around.
                 .reduce((chunkMap, chunk) => {
-                    const name = getChunkName(chunk);
+                    const name = utils.normalizeChunkName(chunk, stat);
+
                     let data = chunkMap[name];
 
-                    // Do we have some chunk data alrea8dy?
+                    // Do we have some chunk data already?
                     if (!data) {
                         data = chunkMap[name] = {
                             chunkSize: [0, 0],

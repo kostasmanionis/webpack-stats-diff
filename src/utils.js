@@ -2,7 +2,7 @@
 
 const chalk = require('chalk');
 
-module.exports = {
+const utils = {
     getChange(a, b) {
         return (b - a) / b;
     },
@@ -23,5 +23,23 @@ module.exports = {
         else if (num < 40) return chalk.red
         else if (num <= 100) return chalk.bold.red
         else return chalk.dim;
+    },
+
+    findChunkHashById(id, chunks) {
+        const findChunkById = chunks.find(chunk => id === chunk.id); // Might return undefined
+        return findChunkById && findChunkById.hash || '';
+    },
+
+    normalizeChunkName(chunk, statObject) {
+        // Looping through chunks
+        if (chunk.chunkNames && chunk.chunkNames[0]) {
+            // TODO: Handle compilation hash & chunk id
+            const hash = utils.findChunkHashById(chunk.chunks[0], statObject.chunks) || '';
+            return chunk.name.replace(hash, '');
+        } else {
+            return chunk.names[0];
+        }
     }
 };
+
+module.exports = utils;
