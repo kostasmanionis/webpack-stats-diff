@@ -2,5 +2,6 @@
 
 module.exports = {
     chunks: require('./chunks'),
-    assets: require('./chunks')
+    assets: require('./chunks'),
+    modules: require('./modules')
 };
