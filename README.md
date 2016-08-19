@@ -1,6 +1,8 @@
 # UNSTABLE, NOT ON NPM... yet
 # webpack-stats-diff
 
+![example](./example.gif)
+
 A module for diffing two webpack stats files.
 
 ## Generating a stats file
